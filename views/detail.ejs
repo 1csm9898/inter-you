@@ -1,5 +1,11 @@
 <%-include("partials/header");-%>
 <body>
-  <h2><%=cate%> 질문리스트</h2>
+  <h2><%=part%> 질문리스트</h2>
+  <%questions.forEach((question) =>{%>
+  <P>
+    <%=question.number%><br />
+    <%=question.title%>
+  </P>
+  <%})%>
 </body>
 <%-include("partials/footer");-%>

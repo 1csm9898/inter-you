@@ -65,21 +65,36 @@ app
           res.redirect("/signin");
         } else {
           passport.authenticate("local")(req, res, function () {
-            res.redirect("/" + user.name);
+            res.redirect("/");
           });
         }
       }
     );
   });
 
-app.route("login").get(function (req, res) {
-  res.render("login");
-});
+app
+  .route("/login")
+  .get(function (req, res) {
+    res.render("login");
+  })
+  .post(function (req, res) {
+    const user = new User({
+      username: req.body.username,
+      name: req.body.name,
+      password: req.body.password,
+    });
+    req.login(user, function (err) {
+      if (err) {
+        console.log(err);
+      } else {
+        passport.authenticate("local")(req, res, function () {
+          res.redirect("/");
+        });
+      }
+    });
+  });
 app.get("/", function (req, res) {
   res.render("index");
-});
-app.get("/:name", function (req, res) {
-  res.render("index", { name: req.params.name });
 });
 app.get("/question", function (req, res) {
   res.render("question");

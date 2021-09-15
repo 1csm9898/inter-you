@@ -33,8 +33,6 @@ app.get("/calendar", function (req, res) {
 });
 app.get("/detail/:part", function (req, res) {
   const part = req.params.part;
-  console.log(part);
-  console.log(typeof part);
   Question.find({ part: part }, function (err, questions) {
     if (err) {
       console.log(err);

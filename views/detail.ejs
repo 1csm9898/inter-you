@@ -5,6 +5,11 @@
   <P>
     <%=question.number%><br />
     <%=question.title%>
+    <form method="POST" action="">
+      <textarea>질문에 대한 내 생각은?</textarea>
+      <input type="hidden" value="<%=question.number%>" name="number" >
+      <input type="submit">
+    </form>
   </P>
   <%})%>
 </body>

@@ -88,34 +88,52 @@ app
         console.log(err);
       } else {
         passport.authenticate("local")(req, res, function () {
+          console.log(req.session.passport.user);
           res.redirect("/");
         });
       }
     });
   });
+
 app.get("/", function (req, res) {
   res.render("index");
 });
+
 app.get("/question", function (req, res) {
-  res.render("question");
-});
-app.get("/calendar", function (req, res) {
-  res.render("calendar");
-});
-app.get("/detail/:part", function (req, res) {
-  const part = req.params.part;
-  Question.find({ part: part }, function (err, questions) {
-    if (err) {
-      console.log(err);
-    } else {
-      res.render("detail", {
-        part: part === "me" ? "나" : "우리",
-        questions: questions,
-      });
-    }
-  });
+  if (req.isAuthenticated()) {
+    console.log(req.session.passport.user);
+    res.render("question");
+  } else {
+    res.redirect("/login");
+  }
 });
 
+app.get("/calendar", function (req, res) {
+  if (req.isAuthenticated()) {
+    console.log(req.session.passport.user);
+    res.render("calendar");
+  } else {
+    res.redirect("/login");
+  }
+});
+
+app.route("/detail/:part").get(function (req, res) {
+  if (req.isAuthenticated()) {
+    const part = req.params.part;
+    Question.find({ part: part }, function (err, questions) {
+      if (err) {
+        console.log(err);
+      } else {
+        res.render("detail", {
+          part: part === "me" ? "나" : "우리",
+          questions: questions,
+        });
+      }
+    });
+  } else {
+    res.redirect("/login");
+  }
+});
 app.listen(3000, function () {
   console.log("port 3000 is running");
 });

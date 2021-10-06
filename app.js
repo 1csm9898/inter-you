@@ -33,7 +33,7 @@ const questionSchema = new mongoose.Schema({
   part: String,
   number: Number,
   title: String,
-  content: Object,
+  content: Array,
 });
 
 const userSchema = new mongoose.Schema({
@@ -88,7 +88,7 @@ app
         console.log(err);
       } else {
         passport.authenticate("local")(req, res, function () {
-          console.log(req.session.passport.user);
+          //console.log(req.session.passport.user);
           res.redirect("/");
         });
       }
@@ -101,7 +101,7 @@ app.get("/", function (req, res) {
 
 app.get("/question", function (req, res) {
   if (req.isAuthenticated()) {
-    console.log(req.session.passport.user);
+    //console.log(req.session.passport.user);
     res.render("question");
   } else {
     res.redirect("/login");
@@ -110,30 +110,83 @@ app.get("/question", function (req, res) {
 
 app.get("/calendar", function (req, res) {
   if (req.isAuthenticated()) {
-    console.log(req.session.passport.user);
+    //console.log(req.session.passport.user);
     res.render("calendar");
   } else {
     res.redirect("/login");
   }
 });
 
-app.route("/detail/:part").get(function (req, res) {
-  if (req.isAuthenticated()) {
-    const part = req.params.part;
-    Question.find({ part: part }, function (err, questions) {
-      if (err) {
-        console.log(err);
-      } else {
-        res.render("detail", {
-          part: part === "me" ? "나" : "우리",
-          questions: questions,
-        });
-      }
-    });
-  } else {
-    res.redirect("/login");
-  }
-});
+app
+  .route("/detail/:part")
+  .get(function (req, res) {
+    if (req.isAuthenticated()) {
+      const part = req.params.part;
+      const answerList = [];
+      let answerListB = [];
+      Question.find({ part: part }, function (err, questions) {
+        if (err) {
+          console.log(err);
+        } else {
+          questions.forEach(function (question) {
+            if (question.content.length == 0) {
+              answerList.push(null);
+            } else {
+              question.content.forEach(function (personAnswer) {
+                if (personAnswer[0] == req.session.passport.user) {
+                  answerListB.push(personAnswer[1]);
+                  //console.log(question);
+                }
+              });
+            }
+            if (question.content.length != 0 && answerListB.length == 0) {
+              answerList.push(null);
+            } else {
+              answerList.push(answerListB[0]);
+            }
+            answerListB = [];
+          });
+          console.log(answerList);
+          return res.render("detail", {
+            part: part === "me" ? "나" : "우리",
+            questions: questions,
+            answerList: answerList,
+          });
+        }
+      });
+    } else {
+      res.redirect("/login");
+    }
+  })
+  .post(function (req, res) {
+    if (req.isAuthenticated()) {
+      const part = req.body.part === "나" ? "me" : "our";
+      const number = req.body.number;
+      const answer = req.body.answer;
+      const username = req.session.passport.user;
+      const day = new Date().toLocaleDateString();
+      console.log(part);
+      console.log(number);
+      Question.findOne(
+        { part: part, number: number },
+        function (err, question) {
+          if (err) {
+            console.log(err);
+          } else {
+            saveAnswer = [username, answer, day];
+            console.log(saveAnswer);
+            console.log(question);
+            question.content.push(saveAnswer);
+            question.save();
+            //res.render(detail);
+          }
+        }
+      );
+    } else {
+      res.redirect("/login");
+    }
+  });
+
 app.listen(3000, function () {
   console.log("port 3000 is running");
 });

@@ -5,6 +5,13 @@
   <P>
     <%=question.number%><br />
     <%=question.title%>
+    <form method="POST" action="/detail/<%=part%>">
+     
+      <textarea name="answer"><%=answerList[question.number-1]%></textarea>
+      <input type="hidden" value="<%=part%>" name="part" >
+      <input type="hidden" value="<%=question.number%>" name="number" >
+      <input type="submit">
+    </form>
   </P>
   <%})%>
 </body>
